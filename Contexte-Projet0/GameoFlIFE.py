@@ -34,8 +34,7 @@ class GOLEngine:
     @property
     def height(self):
         return self.__height
-    
-    @property
+
     def get_grid(self):
         return self.__grid
 
