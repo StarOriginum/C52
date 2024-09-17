@@ -112,7 +112,7 @@ class GolApp(QMainWindow):
         self.__main_layout = QBoxLayout(QBoxLayout.LeftToRight)
         self.__main_layout.add_widget(self.__simulation_button)
         self.__main_layout.add_widget(self.__app_view)
-        self.__main_layout.add_layout(self.__right_box)
+        self.__main_layout.add_layout(self.__right_layout)
         
         self.__central_widget = QWidget()
         self.__central_widget.set_layout(self.__main_layout)
