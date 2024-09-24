@@ -71,33 +71,68 @@ class QSimulationView(QWidget):
         
     
 class QControlPanels(QWidget):
+    
+    toggle_simulation = Signal(QPushButton)
+    step_simulation = Signal(QPushButton)
+    speed_changed = Signal(int)
+    
+
     def __init__(self, parent = None):
         super().__init__(None)
+        fixed_widget_width = 100
+        self.__timer_simulation = QTimer()
         
         self.__start_pause_button = QPushButton("Start")
-        self.__start_pause_button.clicked.connect(self.toggle_simulation)
+        self.__start_pause_button.clicked.connect(self.toggled_simulation)
         
         self.__step_button = QPushButton("Step")
-        self.__step_button.clicked.connect(self.step_simulation)
+        self.__step_button.clicked.connect(self.stepped_simulation)
         
         self.__speed_scrollbar = QScrollBar(Qt.Horizontal)
+        self.__speed_scrollbar.set_fixed_width(fixed_widget_width)
+        self.__speed_scrollbar.set_range(0,100)
+        self.__speed_scrollbar.value = 24
         self.__speed_scrollbar.valueChanged.connect(self.change_simulation_speed)
+
+        self.__speed_label = QLabel("Normal")
         
-        self.__controls_layout = QBoxLayout(QBoxLayout.LeftToRight)
+        self.__controls_layout = QVBoxLayout()
         self.__controls_layout.add_widget(self.__start_pause_button)
         self.__controls_layout.add_widget(self.__step_button)
         self.__controls_layout.add_widget(self.__speed_scrollbar)
+        self.__controls_layout.add_widget(self.__speed_label)
         
         self.set_layout(self.__controls_layout)
-        
-    def toggle_simulation(self):
-        self.toggle_simulation_signal.emit(self.__start_pause_button)
+
+      
+    def toggled_simulation(self):
+        self.toggle_simulation.emit(self.__start_pause_button)
+
+        if self.__start_pause_button.text == "Start":
+            self.__start_pause_button.text = "Stop"
+        else:
+            self.__start_pause_button.text = "Start"
+
     
-    def step_simulation(self):
-        self.step_simulation_signal.emit(self.__step_button)
-        
+    def stepped_simulation(self):
+        self.step_simulation.emit(self.__step_button)
+
+    @Slot(int)
     def change_simulation_speed(self):
-        self.speed_changed_signal.emit(self.__speed_scrollbar)
+        self.speed_changed.emit(self.__speed_scrollbar)
+
+        if self.__speed_scrollbar.value < 25:
+            self.__timer_simulation.interval = 1000
+            self.__speed_label.text = "Normal"
+        elif self.__speed_scrollbar.value < 50:
+            self.__timer_simulation.interval = 500
+            self.__speed_label.text = "Fast"
+        elif self.__speed_scrollbar.value < 75:
+            self.__timer_simulation.interval = 200
+            self.__speed_label.text = "Faster"
+        else:
+            self.__timer_simulation.interval = 100
+            self.__speed_label.text = "FASTEST"
         
         
         
@@ -107,10 +142,7 @@ class QControlPanels(QWidget):
 
 class GolApp(QMainWindow):
     
-    toggled = Signal(QPushButton)
-    started = Signal(QPushButton)
-    stopped = Signal(QPushButton)
-    speedChanged = Signal(QScrollBar)
+    
     
     def __init__(self):
         super().__init__(None)
@@ -130,7 +162,7 @@ class GolApp(QMainWindow):
         self.__simulation_running = True
         self.__app_view = QLabel()
         self.__right_box = QGroupBox("Stats")
-        self.__right_box.set_layout(QVBoxLayout(QBoxLayout.BottomToTop))
+        self.__right_box.set_layout(QBoxLayout(QBoxLayout.BottomToTop))
         self.__right_box.layout().add_widget(self.__info_panel)
         # self.__stats_widget = QWidget(self)
         # self.__stats_widget.set_layout()
@@ -138,18 +170,18 @@ class GolApp(QMainWindow):
         self.__right_layout.add_widget(self.__right_box)
         
         self.__left_top_box = QGroupBox("Controls")
-        self.__left_top_box.set_layout(QVBoxLayout())
-        self.__left_top_box.layout().add_widget(self.__button_panel)
+        self.__left_top_box.set_layout(QBoxLayout(QBoxLayout.TopToBottom))
+        self.__left_top_box.layout().add_widget(self.__control_panel)
         
-        self.__left_layout = QVBoxLayout(QBoxLayout.TopToBottom)
+        self.__left_layout = QBoxLayout(QBoxLayout.TopToBottom)
         self.__left_layout.add_widget(self.__left_top_box)
 
-        self.__control_panel.toggle_simulation_signal.connect(self.toggle_simulation)
-        self.__control_panel.step_simulation_signal.connect(self.step_simulation)
-        self.__control_panel.speed_changed_signal.connect(self.change_simulation_speed)
+        self.__control_panel.toggle_simulation.connect(self.toggle_simulation)
+        self.__control_panel.step_simulation.connect(self.step_simulation)
+        self.__control_panel.speed_changed.connect(self.change_simulation_speed)
 
         self.__main_layout = QBoxLayout(QBoxLayout.LeftToRight)
-        self.__main_layout.add_widget(self.__simulation_button)
+        self.__main_layout.add_widget(self.__left_top_box)
         self.__main_layout.add_widget(self.__app_view)
         self.__main_layout.add_layout(self.__right_layout)
         
@@ -193,17 +225,34 @@ class GolApp(QMainWindow):
         self.__app_view.pixmap = pixmap
         self.__info_panel.update_stats()
      
-    @Slot    
+       
     def toggle_simulation(self):
         if self.__simulation_running:
-            self.__timer.stop()
-            self.__simulation_button.text = "Start"
+            self.__timer.stop()     
         else:
             self.__timer.start(100)
-            self.__simulation_button.text = "Start"
+            
         
         self.__simulation_running = not self.__simulation_running
 
+    def step_simulation(self):
+        self.__gol.process()
+
+        self.updateImage()
+
+    @Slot(int)
+    def change_simulation_speed(self, value):
+
+        if value < 25:
+            self.__timer.interval = 1000  # Slowest speed
+        elif value < 50:
+            self.__timer.interval = 500   # Medium speed
+        elif value < 75:
+            self.__timer.interval = 200    # Faster speed
+        else:
+            self.__timer.interval = 100     # Fastest speed
+
+    
     def resize_event(self, event):
 
         self.__new_width = self.__app_view.width
