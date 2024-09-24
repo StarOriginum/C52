@@ -80,7 +80,6 @@ class QControlPanels(QWidget):
     def __init__(self, parent = None):
         super().__init__(None)
         fixed_widget_width = 100
-        self.__timer_simulation = QTimer()
         
         self.__start_pause_button = QPushButton("Start")
         self.__start_pause_button.clicked.connect(self.toggled_simulation)
@@ -118,20 +117,21 @@ class QControlPanels(QWidget):
         self.step_simulation.emit(self.__step_button)
 
     @Slot(int)
-    def change_simulation_speed(self):
-        self.speed_changed.emit(self.__speed_scrollbar)
+    def change_simulation_speed(self, value):
+        print(f"Speed changed to {value}")
+        self.speed_changed.emit(value)
 
         if self.__speed_scrollbar.value < 25:
-            self.__timer_simulation.interval = 1000
+            
             self.__speed_label.text = "Normal"
         elif self.__speed_scrollbar.value < 50:
-            self.__timer_simulation.interval = 500
+            
             self.__speed_label.text = "Fast"
         elif self.__speed_scrollbar.value < 75:
-            self.__timer_simulation.interval = 200
+            
             self.__speed_label.text = "Faster"
         else:
-            self.__timer_simulation.interval = 100
+            
             self.__speed_label.text = "FASTEST"
         
         
@@ -236,12 +236,14 @@ class GolApp(QMainWindow):
         self.__simulation_running = not self.__simulation_running
 
     def step_simulation(self):
+        print(f"Timer interval: {self.__timer.interval}")
         self.__gol.process()
 
         self.updateImage()
 
     @Slot(int)
     def change_simulation_speed(self, value):
+        print(f"Received speed change: {value}")
 
         if value < 25:
             self.__timer.interval = 1000  # Slowest speed
@@ -250,7 +252,7 @@ class GolApp(QMainWindow):
         elif value < 75:
             self.__timer.interval = 200    # Faster speed
         else:
-            self.__timer.interval = 100     # Fastest speed
+            self.__timer.interval = 10     # Fastest speed
 
     
     def resize_event(self, event):
