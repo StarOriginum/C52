@@ -1,6 +1,6 @@
 
 # from GameoFlIFE import GOLEngine
-from gol_engine_02 import GOLEngine
+from gol_engine_numpy import GOLEngine
 import sys
 
 from PySide6.QtCore import Qt, Slot,QTimer, Signal
