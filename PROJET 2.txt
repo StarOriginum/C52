@@ -1,0 +1,21 @@
+ALGORITHME GÉNÉTIQUE
+ - à la base de tous les algo évolutionnaires
+ - d'une puissance exceptionnelle
+ 
+Problème à 2 dimensions:
+ -Définir l'espace de recherche
+ -Donner un indice de performance
+ -Sélectionner des géniteurs selon les indices
+
+
+Étapes
+ - Initialisation
+ - Sélection
+ - Croisement
+ - Mutation
+
+Algo peut être dégressif (il peut être divergent à cause des mutations)
+
+
+CONCEPTS
+- Elistime (garder Ne parents)
