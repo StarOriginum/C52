@@ -19,3 +19,8 @@ Algo peut être dégressif (il peut être divergent à cause des mutations)
 
 CONCEPTS
 - Elistime (garder Ne parents)
+
+
+Pour chaque dimension, il faut identifer les dimensions et leur intervalles. Par la suite, leur donner un nom pour chaque dimension.
+Il faut ensuite trouver la fonction objective pour la solution, souvent appelé chromosome. La fonction retourne un float qui identifie la performance de chaque valeur dans la solution.
+La fonction objective doit maximiser (donc plus le résultat de la fonction, plus la valeur est performante)
